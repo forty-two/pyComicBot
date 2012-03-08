@@ -2,6 +2,9 @@ This is a small IRC bot that creates comics after trigger words are said in the
 channel (defaults to laughter expressions such as 'lol'). It is a port of Paul
 Mutton's original comicbot (http://www.jibble.org/comicbot/).
 
+Note that most of the template images are currently from the original comicbot,
+therefore they belong to the creators titled in the images.
+
 Dependancies:
     PIL
     IRCLib
