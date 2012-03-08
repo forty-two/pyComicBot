@@ -160,14 +160,15 @@ class IRCclient():
         self.messageTracker[channel].append(message)
         self.linesSinceComic += 1
         try:
+            message = message.decode('utf-8')
             for trigger in self.triggers:
                 if trigger in message and self.linesSinceComic > 3:
                     comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
                     self.linesSinceComic = 0
                     if comicName:
                         self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
-        except UnicodeDecodeError:
-            self.checkMessage(channel, message.decode('utf-8'))
+        except:
+            annoyance = "IRC's unicode handling"
 
 
 
