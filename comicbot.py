@@ -43,29 +43,32 @@ class ComicMaker():
         return False
 
     def makeComic(self, previousLines):
-        path, dirs, files = os.walk(self.templateDirectory).next()
-        comicChoices = [x for x in files if x.endswith('.json')]
-        comicDataFile = open(os.path.join(self.templateDirectory, comicChoices[random.randint(0, len(comicChoices)-1)]))
-        comicData = json.load(comicDataFile)
-        comic = Image.open(os.path.join(self.templateDirectory, comicData['backgroundImage']))
-        previousLines = previousLines[-len(comicData['bubbles']):]
-        for i in range(len(comicData['bubbles'])):
-            xSize, ySize = comicData['bubbles'][i]['size']
-            print previousLines
-            print previousLines[i]
-            bubbleText = self.drawText(previousLines[i], xSize, ySize)
-            if not bubbleText:
-                return False
-            comic.paste(bubbleText, tuple(comicData['bubbles'][i]['position']))
-        font = ImageFont.truetype('MONACO.TTF', 10)
-        draw = ImageDraw.Draw(comic)
-        draw.text(tuple(comicData['datestampPos']), time.ctime(), font=font, fill="#000000")
+        try:
+            path, dirs, files = os.walk(self.templateDirectory).next()
+            comicChoices = [x for x in files if x.endswith('.json')]
+            comicDataFile = open(os.path.join(self.templateDirectory, comicChoices[random.randint(0, len(comicChoices)-1)]))
+            comicData = json.load(comicDataFile)
+            comic = Image.open(os.path.join(self.templateDirectory, comicData['backgroundImage']))
+            previousLines = previousLines[-len(comicData['bubbles']):]
+            for i in range(len(comicData['bubbles'])):
+                xSize, ySize = comicData['bubbles'][i]['size']
+                print previousLines
+                print previousLines[i]
+                bubbleText = self.drawText(previousLines[i], xSize, ySize)
+                if not bubbleText:
+                    return False
+                comic.paste(bubbleText, tuple(comicData['bubbles'][i]['position']))
+            font = ImageFont.truetype('MONACO.TTF', 10)
+            draw = ImageDraw.Draw(comic)
+            draw.text(tuple(comicData['datestampPos']), time.ctime(), font=font, fill="#000000")
 
-        comicName = 'comic-%i.png' % int(time.time())
+            comicName = 'comic-%i.png' % int(time.time())
 
-        comic.save(os.path.join(self.outputDirectory, comicName))
+            comic.save(os.path.join(self.outputDirectory, comicName))
 
-        return comicName
+            return comicName
+        except:
+            return None
 
 
 class inputThread(threading.Thread):
