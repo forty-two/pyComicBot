@@ -1,0 +1,29 @@
+{
+    "bubbles": [
+        {
+            "position": [
+                345, 
+                84
+            ], 
+            "size": [
+                290, 
+                80
+            ]
+        }, 
+        {
+            "position": [
+                412, 
+                241
+            ], 
+            "size": [
+                224, 
+                62
+            ]
+        }
+    ], 
+    "backgroundImage": "kittens.png", 
+    "datestampPos": [
+        10, 
+        400
+    ]
+}

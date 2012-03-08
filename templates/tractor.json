@@ -1,0 +1,39 @@
+{
+    "bubbles": [
+        {
+            "position": [
+                29, 
+                50
+            ], 
+            "size": [
+                146, 
+                70
+            ]
+        }, 
+        {
+            "position": [
+                230, 
+                50
+            ], 
+            "size": [
+                130, 
+                65
+            ]
+        }, 
+        {
+            "position": [
+                420, 
+                50
+            ], 
+            "size": [
+                155, 
+                65
+            ]
+        }
+    ], 
+    "backgroundImage": "tractor.png", 
+    "datestampPos": [
+        11, 
+        251
+    ]
+}

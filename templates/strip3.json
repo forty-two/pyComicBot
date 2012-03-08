@@ -1,0 +1,39 @@
+{
+    "bubbles": [
+        {
+            "position": [
+                29, 
+                65
+            ], 
+            "size": [
+                146, 
+                82
+            ]
+        }, 
+        {
+            "position": [
+                222, 
+                66
+            ], 
+            "size": [
+                141, 
+                71
+            ]
+        }, 
+        {
+            "position": [
+                417, 
+                64
+            ], 
+            "size": [
+                155, 
+                78
+            ]
+        }
+    ], 
+    "backgroundImage": "strip3.png", 
+    "datestampPos": [
+        11, 
+        251
+    ]
+}

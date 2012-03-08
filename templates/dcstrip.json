@@ -1,0 +1,69 @@
+{
+    "bubbles": [
+        {
+            "position": [
+                10, 
+                224
+            ], 
+            "size": [
+                84, 
+                53
+            ]
+        }, 
+        {
+            "position": [
+                139, 
+                94
+            ], 
+            "size": [
+                109, 
+                34
+            ]
+        }, 
+        {
+            "position": [
+                273, 
+                160
+            ], 
+            "size": [
+                109, 
+                38
+            ]
+        }, 
+        {
+            "position": [
+                270, 
+                216
+            ], 
+            "size": [
+                114, 
+                42
+            ]
+        }, 
+        {
+            "position": [
+                558, 
+                97
+            ], 
+            "size": [
+                130, 
+                50
+            ]
+        }, 
+        {
+            "position": [
+                502, 
+                184
+            ], 
+            "size": [
+                74, 
+                30
+            ]
+        }
+    ], 
+    "backgroundImage": "dcstrip01-small.png", 
+    "datestampPos": [
+        4, 
+        285
+    ]
+}

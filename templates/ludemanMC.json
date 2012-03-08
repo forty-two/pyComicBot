@@ -1,0 +1,39 @@
+{
+    "bubbles": [
+        {
+            "position": [
+                62, 
+                27
+            ], 
+            "size": [
+                187, 
+                73
+            ]
+        }, 
+        {
+            "position": [
+                286, 
+                33
+            ], 
+            "size": [
+                160, 
+                87
+            ]
+        }, 
+        {
+            "position": [
+                602, 
+                46
+            ], 
+            "size": [
+                158, 
+                69
+            ]
+        }
+    ], 
+    "backgroundImage": "ludemanMC.png", 
+    "datestampPos": [
+        14, 
+        269
+    ]
+}
