@@ -10,6 +10,7 @@ import time
 import threading
 import irclib
 import sys
+import re
 
 irclib.DEBUG = True
 
