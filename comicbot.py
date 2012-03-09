@@ -28,7 +28,7 @@ class ComicMaker():
         numLines = 1
         fontSize = 40
         currentlyFits = False
-        while not currentlyFits and fontSize > 5:
+        while not currentlyFits and fontSize > 3:
             font = ImageFont.truetype('MONACO.TTF', fontSize)
             # things will mess up here if you don't use a monospaced font
             charSize = draw.textsize('a', font=font)
@@ -37,7 +37,7 @@ class ComicMaker():
             if len(lines)*charSize[1] < y:
                 currentlyFits = True
                 for i in range(len(lines)):
-                    draw.text((0, i*charSize[1]+1*i), lines[i], font=font, fill="#000000")
+                    draw.text((0, i*charSize[1]+0.5*i), lines[i], font=font, fill="#000000")
                 return image
             else:
                 fontSize -= 1
@@ -53,11 +53,10 @@ class ComicMaker():
             previousLines = previousLines[-len(comicData['bubbles']):]
             for i in range(len(comicData['bubbles'])):
                 xSize, ySize = comicData['bubbles'][i]['size']
-                print previousLines
-                print previousLines[i]
                 bubbleText = self.drawText(previousLines[i], xSize, ySize)
                 if not bubbleText:
-                    return False
+                    print("Tried to make comic, text placing failed")
+                    return None
                 comic.paste(bubbleText, tuple(comicData['bubbles'][i]['position']))
             font = ImageFont.truetype('MONACO.TTF', 10)
             draw = ImageDraw.Draw(comic)
@@ -68,21 +67,23 @@ class ComicMaker():
             comic.save(os.path.join(self.outputDirectory, comicName))
 
             return comicName
-        except:
+        except Exception as e:
+            print("Exception occurred: {exception}".format(exception=e))
             return None
 
 
 class inputThread(threading.Thread):
-    def __init__(self, parent):
-        self.parent = parent
+    def __init__(self, exitCallback):
+        self.exitCallback = exitCallback
         threading.Thread.__init__(self)
     def run(self):
-        self.running = True
-        while self.running:
+        self.contineRunning = True
+        while self.contineRunning:
             message = raw_input().strip()
             if message == "quit":
                 print("Exiting")
-                self.parent.exit()
+                self.exitCallback()
+                self.contineRunning = False
                 sys.exit()
 
             if re.search(r"(?<=^join )#\w+", message):
@@ -108,6 +109,7 @@ class IRCclient():
         self.messageTracker = {}
         self.linesSinceComic = 0
         self.comicPrefix = comicPrefix
+        self.contineRunning = True
 
 
     def authenticate(self, ircClient, username, password):
@@ -160,19 +162,28 @@ class IRCclient():
         self.messageTracker[channel].append(message)
         self.linesSinceComic += 1
         try:
-            message = message.decode('utf-8')
+            message = message.decode('utf-8', 'ignore')
             for trigger in self.triggers:
-                if trigger in message and self.linesSinceComic > 3:
+                if trigger.search(message) and self.linesSinceComic > 3:
                     comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
                     self.linesSinceComic = 0
                     if comicName:
                         self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
+            if len(self.messageTracker[channel]) > 51:
+                self.messageTracker[channel] = self.messageTracker[channel][-50:]
         except:
             annoyance = "IRC's unicode handling"
 
+    def handleCTCP(self, connection, event):
+        type = event.arguments()[0]
+        sendingNick = event.source().split('!')[0]
+        channel = event.target().strip()
+        if type == "ACTION":
+            message = "*%s %s" % (sendingNick, event.arguments()[1])
+            self.checkMessage(channel, message)
 
-
-
+        if type == "VERSION":
+            self.server.notice(event.source(), "pyComicBot 0.1")
 
 
     def connect(self):
@@ -181,18 +192,20 @@ class IRCclient():
 
         irc.add_global_handler('privnotice', self.handlePrivNotice)
         irc.add_global_handler('pubmsg', self.handlePubMsg)
+        irc.add_global_handler('ctcp', self.handleCTCP)
 
         self.server = irc.server()
         self.server.connect(self.serverAddress, 6667, self.nick, ircname=self.nick)
 
-        self.consoleInput = inputThread(self)
+        self.consoleInput = inputThread(self.exit)
         self.consoleInput.start()
 
-        irc.process_forever()
+        while self.contineRunning:
+            irc.process_once(0.2)
 
     def exit(self):
-        self.consoleInput.running = False
-        self.consoleInput._Thread__stop()
+        self.consoleInput.contineRunning = False
+        self.contineRunning = False
         sys.exit()
 
 
@@ -224,7 +237,8 @@ def main():
     nick = config['IRCsettings']['nick']
     password = config['IRCsettings']['password']
     channels = config['IRCsettings']['channels']
-    triggers = config['triggers']
+    triggers = [re.compile('(^| )'+x+'[\!\?]*( |$)') for x in config['triggers']]
+
     comicPrefix = config['IRCsettings']['imagePrefix']
 
     comicMaker = ComicMaker(config['templateDirectory'], config['outputDirectory'])
