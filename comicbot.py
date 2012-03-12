@@ -164,7 +164,7 @@ class IRCclient():
         try:
             message = message.decode('utf-8', 'ignore')
             for trigger in self.triggers:
-                if trigger.search(message) and self.linesSinceComic > 3:
+                if trigger.search(message) and self.linesSinceComic > 10:
                     comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
                     self.linesSinceComic = 0
                     if comicName:
