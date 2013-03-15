@@ -175,12 +175,14 @@ class IRCclient():
                             self.linesSinceComic = 0
                             if comicName:
                                 self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
+                                self.lastComicTime = time.time()
                         elif trigger['inLine'].search(message):
                             self.messageTracker[channel].append(message)
                             comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
                             self.linesSinceComic = 0
                             if comicName:
                                 self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
+                                self.lastComicTime = time.time()
 
             if len(self.messageTracker[channel]) > 51:
                 self.messageTracker[channel] = self.messageTracker[channel][-50:]
