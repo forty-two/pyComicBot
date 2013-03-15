@@ -97,7 +97,7 @@ class inputThread(threading.Thread):
 
 class IRCclient():
 
-    def __init__(self, server, nick, password, channels, comicMaker, triggers, comicPrefix):
+    def __init__(self, server, nick, password, channels, comicMaker, triggers, comicPrefix, timeDelay):
         self.serverAddress = server
         self.comicMaker = comicMaker
         self.triggers = triggers
@@ -106,9 +106,11 @@ class IRCclient():
         self.channels = channels
         self.lastMessageTime = time.time()
         self.lastMessage = ""
+        self.lastComicTime = 0
         self.messageTracker = {}
         self.linesSinceComic = 0
         self.comicPrefix = comicPrefix
+        self.timeDelay = timeDelay
         self.contineRunning = True
 
 
@@ -156,23 +158,34 @@ class IRCclient():
                     sendingHostmask == "forty_two.staff.reddit-minecraft":
                         sys.exit()
         else:
-            self.checkMessage(channel, message)
+            self.checkMessage(channel, message, sendingNick)
 
-    def checkMessage(self, channel, message):
+    def checkMessage(self, channel, message, sendingNick):
         self.messageTracker[channel].append(message)
         self.linesSinceComic += 1
+        if sendingNick == "ChanServ":
+            return
         try:
             message = message.decode('utf-8', 'ignore')
             for trigger in self.triggers:
-                if trigger.search(message) and self.linesSinceComic > 10:
-                    comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
-                    self.linesSinceComic = 0
-                    if comicName:
-                        self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
+                if self.linesSinceComic > 10:
+                    if time.time() - self.lastComicTime > self.timeDelay:
+                        if trigger['separate'].search(message):
+                            comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
+                            self.linesSinceComic = 0
+                            if comicName:
+                                self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
+                        elif trigger['inLine'].search(message):
+                            self.messageTracker[channel].append(message)
+                            comicName = self.comicMaker.makeComic(self.messageTracker[channel][:-1])
+                            self.linesSinceComic = 0
+                            if comicName:
+                                self.sendMessage(channel, "New comic: "+self.comicPrefix+comicName)
+
             if len(self.messageTracker[channel]) > 51:
                 self.messageTracker[channel] = self.messageTracker[channel][-50:]
         except:
-            annoyance = "IRC's unicode handling"
+            ignore = "IRC's unicode handling"
 
     def handleCTCP(self, connection, event):
         type = event.arguments()[0]
@@ -183,7 +196,7 @@ class IRCclient():
             self.checkMessage(channel, message)
 
         if type == "VERSION":
-            self.server.notice(event.source(), "pyComicBot 0.1")
+            self.server.notice(sendingNick, "pyComicBot 0.1")
 
 
     def connect(self):
@@ -222,6 +235,7 @@ def loadConfig(filename):
                      'triggers'   : ['lol', 'haha', 'hehe', 'rofl'],
                      'templateDirectory' : 'templates',
                      'outputDirectory' : 'comics',
+                     'triggerTimePeriod': 3600,
                     }
     if os.path.isfile(filename):
         return json.load(open(filename))
@@ -237,13 +251,16 @@ def main():
     nick = config['IRCsettings']['nick']
     password = config['IRCsettings']['password']
     channels = config['IRCsettings']['channels']
-    triggers = [re.compile('(^| )'+x+'[\!\?]*( |$)') for x in config['triggers']]
+    triggers = [{'inLine'  : re.compile('(^| )'+x+'[\!\?]* | '+x+'[\!\?]*$', re.I),
+                 'separate': re.compile('^'+x+'[\!\?]*$', re.I)} for x in config['triggers']]
 
     comicPrefix = config['IRCsettings']['imagePrefix']
 
+    timeDelay = config['triggerTimePeriod']
+
     comicMaker = ComicMaker(config['templateDirectory'], config['outputDirectory'])
 
-    irc = IRCclient(server, nick, password, channels, comicMaker, triggers, comicPrefix)
+    irc = IRCclient(server, nick, password, channels, comicMaker, triggers, comicPrefix, timeDelay)
     irc.connect()
 
 
